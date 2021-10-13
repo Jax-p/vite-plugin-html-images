@@ -72,14 +72,10 @@ Interface `ImageOptions`
 | ----------- | -----------  | ----------- |
 | tempDirname | `string` | The temporary directory must be inside the source directory (src) so that the images can be accessed from the browser while the dev server is running.
 | regexp   | RegExp  | Regular expression that retrieves URLs of images in HTML. Match (the image url) must be on index 0.
+
 You can check default values in [defaults.ts](src/defaults.ts).
 
 ### Optimization options
 Interface `OptimizationOptions`
 
-| Parameter | Type  |
-| ----------- | -----------  | 
-| jpeg |  sharp.JpegOptions
-| png   | sharp.PngOptions  | 
-| webp   | sharp.WebpOptions  | 
-View a detailed list of [sharp types](https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/sharp/index.d.ts).
+Anything that extends [sharps type OutputOptions](https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/sharp/index.d.ts).
