@@ -1,6 +1,9 @@
 # vite-plugin-html-images
 [Vite](https://github.com/vitejs/vite) plugin that transforms images with query parameters from HTML using [sharp](https://github.com/lovell/sharp).
 
+✔️ Works with ViteDevServer (*tempDir* must be in *src* directory)  
+✔️ Finds images in `<img src/>`, `srcset` and `source` (with default settings, otherwise it works according to your regular expression)
+
 ## Install
 **Yarn**
 ```
