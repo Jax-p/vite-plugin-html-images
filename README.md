@@ -7,11 +7,11 @@
 ## Install
 **Yarn**
 ```
-yarn add vite-plugin-imagemin -D
+yarn add vite-plugin-html-images -D
 ```
 or **npm**
 ```
-npm i vite-plugin-imagemin --save-dev
+npm i vite-plugin-html-images --save-dev
 ```
 
 ## Usage
