@@ -11,6 +11,10 @@
     "vite-plugin",
     "images"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Jax-p/vite-plugin-html-images"
+  },
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "prepublishOnly": "yarn build"

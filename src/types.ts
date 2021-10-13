@@ -1,9 +1,7 @@
 import * as sharp from "sharp";
+import {OutputOptions} from "sharp";
 
-export interface OptimizationOptions {
-    jpeg?: sharp.JpegOptions,
-    png?: sharp.PngOptions
-}
+export type OptimizationOptions = Record<keyof sharp.FormatEnum, OutputOptions>
 
 export interface ImageOptions
 {

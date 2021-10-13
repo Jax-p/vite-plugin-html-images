@@ -4,17 +4,16 @@ import * as fs from "fs";
 import chalk from "chalk";
 import {normalizePath, ResolvedConfig} from "vite";
 import {ImageOptions, OptimizationOptions} from "./types";
-import {defaultImageOptions, defaultOptimizationOptions} from "./defaults";
+import {defaultImageOptions} from "./defaults";
 import sharp from "sharp";
 
 export default (
     imgOptions?: ImageOptions,
-    optOptions?: OptimizationOptions
+    optOptions: Partial<OptimizationOptions> = {}
 ) => {
     let isDevServer: boolean = false;
     let srcDir: string;
     let tempPath: string;
-    optOptions = {...defaultOptimizationOptions, ...optOptions}
     imgOptions = {...defaultImageOptions, ...imgOptions};
     const {tempDirname, regexp} = imgOptions;
 
@@ -87,7 +86,7 @@ export default (
     }
 
     /** prints optimization stats */
-    function printStats(outName, originalSize, newSize, start: Date, end: Date) {
+    function printStats(outName: string, originalSize: number, newSize: number, start: Date, end: Date) {
         const maxLabelLength = 30;
         const seconds = ((end.getTime() - start.getTime()) / 1000).toString();
         if (outName.length > maxLabelLength)
@@ -124,8 +123,9 @@ export default (
             console.error(`Image quality ${quality} is not valid integer.`);
         const baseOptions = optOptions[resolvedFormat] || {};
         const options = parsedQuality ? {...baseOptions, quality: parsedQuality} : baseOptions;
-        await sharpImage[resolvedFormat](options);
-        return (options.quality ? `.q${options.quality}` : '') + `.${format}`;
+        const info = await sharpImage[resolvedFormat](options);
+        const outputQuality = info?.options?.[`${resolvedFormat}Quality`] || null;
+        return (outputQuality ? `.q${outputQuality}` : '') + `.${format}`;
     }
 
     /** Returns extension name without dot (.jpg vs jpg). */
