@@ -39,6 +39,13 @@ Use the image as always but add the parameters you would like to change.
 ```
 *The image has been scaled to 500 pixels by width and converted to Webp format with 70% quality optimization.*
 
+#### HTML parameters
+| Parameter | Example | Type  | Description |
+| ----------- | -----------  | ----------- | ----------- |
+| width | `?width=800` | number | Resizes image by width. Height is automatic if there is not height parameter.
+| height | `?height=800` | number | Resizes image by height. Width is automatic if there is not width parameter.
+| quality | `?quality=60` | number | Image quality. Must be between 1 and 100 incl.
+| format | `?format=webp` | string | One of [Sharps supported formats](https://sharp.pixelplumbing.com/api-output).
 
 ## Advanced usage
 ### Default optimization options
