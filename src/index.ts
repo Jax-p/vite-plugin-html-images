@@ -31,6 +31,8 @@ export default (
     function onConfigResolved(resolvedConfig: ResolvedConfig) {
         isDevServer = resolvedConfig.command === 'serve'
         srcDir = resolvedConfig.root;
+        // fix for use-case when .html file is in root, not in src (Vite doesn't provide src path in config)
+        if (!srcDir.endsWith('src')) srcDir += '/src'
         tempPath = path.resolve(srcDir, tempDirname)
         !fs.existsSync(tempPath) && fs.mkdirSync(tempPath);
         registerShutdownCallback();
