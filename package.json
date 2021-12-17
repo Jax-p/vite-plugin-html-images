@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-html-images",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Transforms images with query parameters from HTML",
   "main": "dist/index.js",
   "author": "Jax-p",
