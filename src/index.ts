@@ -68,7 +68,7 @@ export default (
             outName += await handleResizeWidth(sharpImage, params['width'] as string, params['height'] as string)
         }
         if (params['format']) {
-            outExt = await handleFormat(params['format'] as string, sharpImage, params.quality)
+            outExt = await handleFormat(params['format'] as string, sharpImage, params.format)
         }
         else if (params['quality']) {
             outExt = await handleFormat(getExt(basename), sharpImage, params.quality)
