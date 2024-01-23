@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as url from 'url';
 import * as fs from "fs";
-import chalk from "chalk";
+import chalkTemplate from "chalk-template";
 import {normalizePath, ResolvedConfig} from "vite";
 import {ImageOptions, OptimizationOptions} from "./types";
 import {defaultImageOptions} from "./defaults";
@@ -22,8 +22,8 @@ export default (
         enforce: 'pre',
         configResolved: onConfigResolved,
         transformIndexHtml: {
-            enforce: 'pre',
-            transform: handleHtmlTransformation
+            order: 'pre',
+            handler: handleHtmlTransformation
         },
     }
 
@@ -88,14 +88,14 @@ export default (
 
     /** prints optimization stats */
     function printStats(outName: string, originalSize: number, newSize: number, start: Date, end: Date) {
-        const maxLabelLength = 30;
+        const maxLabelLength = 36;
         const seconds = ((end.getTime() - start.getTime()) / 1000).toString();
         if (outName.length > maxLabelLength)
             outName = outName.substring(0, maxLabelLength - 1) + '…';
-        let cliMsgName = chalk`{grey Generated} {magenta ${outName.padEnd(40)}}`;
-        const cliMsgValue = chalk`(${originalSize.toString()} kB → {${originalSize > newSize ? 'green' : 'red'} ${newSize.toString()} kB})`;
+        let cliMsgName = chalkTemplate`{grey Generated} {magenta ${outName.padEnd(40)}}`;
+        const cliMsgValue = chalkTemplate`(${originalSize.toString()} kB → {${originalSize > newSize ? 'green' : 'red'} ${newSize.toString()} kB})`;
         const cliMsg = cliMsgName + cliMsgValue;
-        const cliMsgTime = chalk`{grey in ${seconds}s}`
+        const cliMsgTime = chalkTemplate`{grey in ${seconds}s}`
         console.info(cliMsg.padEnd(100) + cliMsgTime);
     }
 
