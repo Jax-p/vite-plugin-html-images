@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as url from 'url';
 import * as fs from "fs";
 import chalkTemplate from "chalk-template";
+import type {Plugin} from "vite";
 import {normalizePath, ResolvedConfig} from "vite";
 import {ImageOptions, OptimizationOptions} from "./types";
 import {defaultImageOptions} from "./defaults";
@@ -10,7 +11,7 @@ import sharp from "sharp";
 export default (
     imgOptions?: ImageOptions,
     optOptions: Partial<OptimizationOptions> = {}
-) => {
+): Plugin => {
     let isDevServer: boolean = false;
     let srcDir: string;
     let tempPath: string;
