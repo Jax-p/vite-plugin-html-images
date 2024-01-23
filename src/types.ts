@@ -1,7 +1,15 @@
-import * as sharp from "sharp";
-import {OutputOptions} from "sharp";
+import type {Sharp, OutputOptions, FormatEnum, Color} from "sharp";
 
-export type OptimizationOptions = Record<keyof sharp.FormatEnum, OutputOptions>
+/**
+ * The optimization options for each specific image format
+ */
+export type OptimizationOptions = {
+    [F in keyof FormatEnum]:
+      // the options Sharp provides for each format
+        ( F extends keyof Sharp ? Parameters<Sharp[F]>[0] : OutputOptions )
+      // options added specifically by this plugin
+      & { background?: Color }
+}
 
 export interface ImageOptions
 {

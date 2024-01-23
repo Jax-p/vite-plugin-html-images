@@ -1,7 +1,8 @@
 import * as path from 'path';
 import * as url from 'url';
 import * as fs from "fs";
-import chalk from "chalk";
+import chalkTemplate from "chalk-template";
+import type {Plugin} from "vite";
 import {normalizePath, ResolvedConfig} from "vite";
 import {ImageOptions, OptimizationOptions} from "./types";
 import {defaultImageOptions} from "./defaults";
@@ -10,7 +11,7 @@ import sharp from "sharp";
 export default (
     imgOptions?: ImageOptions,
     optOptions: Partial<OptimizationOptions> = {}
-) => {
+): Plugin => {
     let isDevServer: boolean = false;
     let srcDir: string;
     let tempPath: string;
@@ -22,8 +23,8 @@ export default (
         enforce: 'pre',
         configResolved: onConfigResolved,
         transformIndexHtml: {
-            enforce: 'pre',
-            transform: handleHtmlTransformation
+            order: 'pre',
+            handler: handleHtmlTransformation
         },
     }
 
@@ -40,8 +41,7 @@ export default (
 
     /** entry function (put html here and it`s done) */
     async function handleHtmlTransformation (html: string): Promise<string | null | void> {
-        let images;
-        images = Array.from(html.matchAll(regexp));
+        let images = Array.from(html.matchAll(regexp));
         if (!images.length) return;
         for (const match of images) {
             html = await processImage(match[0], tempPath, html);
@@ -59,19 +59,19 @@ export default (
         const basename = path.basename(pathname);
         const filename = path.resolve(srcDir, pathname);
         const params = imageUrl.query;
-        const sharpImage = await sharp(filename);
+        const sharpImage = sharp(filename);
 
         let outName = path.parse(basename).name;
         let outExt = path.parse(basename).ext;
 
         if (params['width'] || params['height']) {
-            outName += await handleResizeWidth(sharpImage, params['width'] as string, params['height'] as string)
+            outName += handleResizeWidth(sharpImage, params['width'] as string, params['height'] as string)
         }
-        if (params['format']) {
-            outExt = await handleFormat(params['format'] as string, sharpImage, params.format)
-        }
-        else if (params['quality']) {
-            outExt = await handleFormat(getExt(basename), sharpImage, params.quality)
+        const format = params['format'] as (string | undefined) ?? getExt(basename);
+        const quality = params['quality'] as (string | undefined);
+        const background = params['background'] as (string | undefined);
+        if (format || quality || background) {
+            outExt = await handleConversion(sharpImage, format, { quality, background })
         }
 
         outName += outExt;
@@ -89,26 +89,26 @@ export default (
 
     /** prints optimization stats */
     function printStats(outName: string, originalSize: number, newSize: number, start: Date, end: Date) {
-        const maxLabelLength = 30;
+        const maxLabelLength = 36;
         const seconds = ((end.getTime() - start.getTime()) / 1000).toString();
         if (outName.length > maxLabelLength)
             outName = outName.substring(0, maxLabelLength - 1) + '…';
-        let cliMsgName = chalk`{grey Generated} {magenta ${outName.padEnd(40)}}`;
-        const cliMsgValue = chalk`(${originalSize.toString()} kB → {${originalSize > newSize ? 'green' : 'red'} ${newSize.toString()} kB})`;
+        let cliMsgName = chalkTemplate`{grey Generated} {magenta ${outName.padEnd(40)}}`;
+        const cliMsgValue = chalkTemplate`(${originalSize.toString()} kB → {${originalSize > newSize ? 'green' : 'red'} ${newSize.toString()} kB})`;
         const cliMsg = cliMsgName + cliMsgValue;
-        const cliMsgTime = chalk`{grey in ${seconds}s}`
+        const cliMsgTime = chalkTemplate`{grey in ${seconds}s}`
         console.info(cliMsg.padEnd(100) + cliMsgTime);
     }
 
     /** Resizing images by width */
-    async function handleResizeWidth(sharpImage: sharp.Sharp, width?: string, height?: string): Promise<string> {
+    function handleResizeWidth(sharpImage: sharp.Sharp, width?: string, height?: string) {
         const _width = width ? parseInt(width) : null;
         const _height = height ? parseInt(height) : null;
         if (_width && isNaN(_width))
             console.error(`Parameter width with value ${width} is not parsable to integer.`)
         if (_height && isNaN(_height))
             console.error(`Parameter width with value ${height} is not parsable to integer.`)
-        await sharpImage.resize({
+        sharpImage.resize({
             width: _width,
             height: _height
         });
@@ -116,18 +116,42 @@ export default (
     }
 
     /** Handles format conversion and quality optimization */
-    async function handleFormat(format: string, sharpImage: sharp.Sharp, quality?: unknown): Promise<string> {
-        const resolvedFormat = format === 'jpg' ? 'jpeg' : format;
+    async function handleConversion(
+            sharpImage: sharp.Sharp,
+            format: string,
+            { quality, background }: { quality?: string, background?: sharp.Color } = {}
+        ): Promise<string> {
+        const resolvedFormat = format.toLowerCase() === 'jpg' ? 'jpeg' : format.toLowerCase();
         const parsedQuality = quality && typeof quality === 'string' ? parseInt(quality) : null;
         if (!Object.keys(sharp.format).includes(resolvedFormat))
             console.error(`Image format ${resolvedFormat} is not supported.`);
         if (parsedQuality && isNaN(parsedQuality))
             console.error(`Image quality ${quality} is not valid integer.`);
-        const baseOptions = optOptions[resolvedFormat] || {};
-        const options = parsedQuality ? {...baseOptions, quality: parsedQuality} : baseOptions;
+        const baseOptions = optOptions[resolvedFormat] ?? {};
+        const options = {...baseOptions};
+        if (parsedQuality) options.quality = parsedQuality;
+        if (background) options.background = background;
+        const parsedBackground = options.background ? handleBackground(sharpImage, options.background) : null;
         const info = await sharpImage[resolvedFormat](options);
         const outputQuality = info?.options?.[`${resolvedFormat}Quality`] || null;
-        return (outputQuality ? `.q${outputQuality}` : '') + `.${format}`;
+        return (parsedBackground ? `.x${parsedBackground.replace('#', '')}` : '') + (outputQuality ? `.q${outputQuality}` : '') + `.${format}`;
+    }
+
+    function handleBackground(sharpImage: sharp.Sharp, background?: string) {
+        const parsedBackground = parseRGBColor(background);
+        sharpImage.flatten({background: parsedBackground});
+        return parsedBackground;
+    }
+
+    function parseRGBColor(color: sharp.Color) {
+        const givenColor = color;
+        if (typeof color === 'object') color = `${color.r.toString(16)}${color.g.toString(16)}${color.b.toString(16)}`;
+        color = color.replace('#', '');
+        if (!/^([0-9a-f]{2,3})|([0-9a-f]{6})$/.test(color))
+            console.error(`Background color ${givenColor} is not valid.`);
+        if (color.length === 2) color = `${color.repeat(3)}`;
+        if (color.length === 3) color = `${color[0]}${color[0]}${color[1]}${color[1]}${color[2]}${color[2]}`;
+        return `#${color}`
     }
 
     /** Returns extension name without dot (.jpg vs jpg). */
