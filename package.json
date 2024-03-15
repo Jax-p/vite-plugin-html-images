@@ -33,6 +33,5 @@
     "chalk-template": "^1.1.0",
     "sharp": "^0.33.2",
     "vite": "^5.1.6"
-  },
-  "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"
+  }
 }

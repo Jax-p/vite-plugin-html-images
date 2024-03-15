@@ -24,4 +24,13 @@ export interface ImageOptions
      * Match (the image url) must be on index 0.
      */
     regexp?: RegExp
+
+    /**
+     * Behavior of the plugin when vite is in dev mode.
+     * - "transform" - transform images as intended (slowest)
+     * - "skip" - skip any image transformation and use the original image (fastest, practically disables the plugin in dev mode)
+     * - "formatOnly" - only tranform images to the specified format (faster than "transform" when using multiple transforms of the same image)
+     * @default "transform"
+     */
+    devMode?: "transform" | "skip" | "formatOnly"
 }
