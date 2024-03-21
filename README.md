@@ -46,6 +46,7 @@ Use the image as always but add the parameters you would like to change.
 | height | `?height=800` | number | Resizes image by height. Width is automatic if there is not width parameter.
 | quality | `?quality=60` | number | Image quality. Must be between 1 and 100 incl.
 | format | `?format=webp` | string | One of [Sharps supported formats](https://sharp.pixelplumbing.com/api-output).
+| background | `?background=#ffffff` | string | Alpha-channel will be replaced by this color. Must have 2, 3 or 6 hexadecimal digits, # is optional.
 
 ## Advanced usage
 ### Default optimization options
@@ -78,4 +79,4 @@ You can check default values in [defaults.ts](src/defaults.ts).
 ### Optimization options
 Interface `OptimizationOptions`
 
-Anything that extends [sharps type OutputOptions](https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/sharp/index.d.ts).
+Anything that extends [sharps type OutputOptions](https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/sharp/index.d.ts). By extension a value for background can be given to act as the default/fallback for the HTML-parameter for that format.
